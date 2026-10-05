@@ -26,6 +26,11 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB connected successfully!'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+// Add this right before your AUTH ROUTES
+app.get('/', (req, res) => {
+  res.send('TaskFlow Backend Server is Running Live!');
+});
+
 // --- AUTH ROUTES ---
 app.post('/api/auth/login', async (req, res) => {
   const { name, email, password } = req.body;
