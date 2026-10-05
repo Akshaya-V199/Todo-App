@@ -11,14 +11,15 @@ export default function Dashboard({ user, onLogout }) {
   const [imagePreview, setImagePreview] = useState(null);
   const API_BASE = 'https://taskflow-backend-x9ux.onrender.com/api';
 
+  const userId = user?.id || user?._id;
+
   useEffect(() => {
-    if (user?.id) fetchTasks();
+    if (userId) fetchTasks();
   }, [user]);
 
   const fetchTasks = async () => {
     try {
-      // FIX 1: Pass user.id as a query parameter instead of path parameter
-      const res = await fetch(`${API_BASE}/tasks?userId=${user.id}`);
+      const res = await fetch(`${API_BASE}/tasks?userId=${userId}`);
       const data = await res.json();
       if (res.ok) setTasks(data);
     } catch (err) {
@@ -48,14 +49,23 @@ export default function Dashboard({ user, onLogout }) {
     setImageFile(null);
     setImagePreview(null);
   };
-
-  const handleCreateTask = async (e) => {
+const handleCreateTask = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !user?.id) return;
+    const userId = user?.id || user?._id;
+
+    if (!title.trim()) {
+      alert('Please enter a task title!');
+      return;
+    }
+
+    if (!userId) {
+      alert('User session not found. Please log in again!');
+      return;
+    }
 
     try {
       const formData = new FormData();
-      formData.append('userId', user.id);
+      formData.append('userId', userId);
       formData.append('title', title.trim());
       formData.append('subtasks', JSON.stringify(subtasksInput));
       if (imageFile) formData.append('image', imageFile);
@@ -71,6 +81,8 @@ export default function Dashboard({ user, onLogout }) {
         setTitle('');
         setSubtasksInput([]);
         clearImage();
+      } else {
+        alert(newTask.message || 'Failed to create task');
       }
     } catch (err) {
       console.error('Error creating task:', err);
