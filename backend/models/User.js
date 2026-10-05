@@ -1,11 +1,11 @@
+// backend/models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String }, // Optional for Google OAuth users
+  password: { type: String, required: false }, // Must be false or omitted
   picture: { type: String, default: '' },
-  googleId: { type: String },
   role: { type: String, default: 'user' }
 }, { timestamps: true });
 

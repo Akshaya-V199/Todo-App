@@ -32,21 +32,34 @@ app.get('/', (req, res) => {
 });
 
 // --- AUTH ROUTES ---
-app.post('/api/auth/login', async (req, res) => {
-  const { name, email, password } = req.body;
+// backend/server.js
+app.post('/api/auth/google', async (req, res) => {
+  const { name, email, picture } = req.body;
   try {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required from Google' });
+    }
+
     let user = await User.findOne({ email });
     if (!user) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user = new User({ name: name || email.split('@')[0], email, password: hashedPassword });
+      user = new User({
+        name: name || email.split('@')[0],
+        email,
+        picture: picture || ''
+      });
       await user.save();
-    } else if (user.password) {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     }
-    res.json({ id: user._id, name: user.name, email: user.email, picture: user.picture, role: user.role });
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      picture: user.picture,
+      role: user.role
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Google Auth Server Error:', err);
+    res.status(500).json({ message: 'Server error processing Google login', error: err.message });
   }
 });
 
