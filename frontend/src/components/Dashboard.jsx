@@ -10,13 +10,15 @@ export default function Dashboard({ user, onLogout }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const API_BASE = 'https://taskflow-backend-x9ux.onrender.com/api';
+
   useEffect(() => {
     if (user?.id) fetchTasks();
   }, [user]);
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch(`${API_BASE}/tasks/${user.id}`);
+      // FIX 1: Pass user.id as a query parameter instead of path parameter
+      const res = await fetch(`${API_BASE}/tasks?userId=${user.id}`);
       const data = await res.json();
       if (res.ok) setTasks(data);
     } catch (err) {
@@ -124,7 +126,10 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* Create Task Box */}
         <form onSubmit={handleCreateTask} style={styles.createCard}>
+          {/* FIX 2: Added id and name attributes */}
           <input
+            id="task-title-input"
+            name="title"
             type="text"
             placeholder="Main task title (e.g., Redesign Website)"
             value={title}
@@ -135,6 +140,8 @@ export default function Dashboard({ user, onLogout }) {
           {/* Subtask Adder */}
           <div style={styles.subtaskInputRow}>
             <input
+              id="subtask-input"
+              name="subtask"
               type="text"
               placeholder="Add subtask..."
               value={currentSubtask}
@@ -164,7 +171,7 @@ export default function Dashboard({ user, onLogout }) {
             <label htmlFor="img-upload" style={styles.uploadLabel}>
               <ImageIcon size={18} color="#64748B" />
               <span style={{ fontSize: '13px', color: '#64748B' }}>Attach Image</span>
-              <input id="img-upload" type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+              <input id="img-upload" name="image" type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
             </label>
 
             <button type="submit" style={styles.submitBtn}>
@@ -240,9 +247,9 @@ export default function Dashboard({ user, onLogout }) {
                   )}
 
                   {/* Attached Image */}
-{task.image && (
-  <img src={task.image.startsWith('data:') ? task.image : `https://taskflow-backend-x9ux.onrender.com${task.image}`} alt="Task attachment" style={styles.taskImage} />
-)}
+                  {task.image && (
+                    <img src={task.image.startsWith('data:') ? task.image : `https://taskflow-backend-x9ux.onrender.com${task.image}`} alt="Task attachment" style={styles.taskImage} />
+                  )}
                 </div>
               );
             })
