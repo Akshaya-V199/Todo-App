@@ -23,50 +23,52 @@ export default function AuthPage({ onLoginSuccess }) {
       });
 
       const data = await res.json();
-      if (res.ok && typeof onLoginSuccess === 'function') {
-        onLoginSuccess(data);
+      if (res.ok) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.token) localStorage.setItem('token', data.token);
+        if (typeof onLoginSuccess === 'function') onLoginSuccess(data.user);
       } else {
         alert(data.message || 'Google login failed');
       }
     } catch (err) {
       console.error('Google login error:', err);
-      if (typeof onLoginSuccess === 'function') {
-        const decoded = jwtDecode(credentialResponse.credential);
-        onLoginSuccess({
-          name: decoded.name,
-          email: decoded.email,
-          picture: decoded.picture,
-          role: 'user'
-        });
-      }
+      alert('Google login failed. Please try again.');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Route dynamically based on tab state
+    const endpoint = isRegistering ? '/api/auth/register' : '/api/auth/login';
+
     try {
-      const res = await fetch('https://taskflow-backend-x9ux.onrender.com/api/auth/login', {
+      const res = await fetch(`https://taskflow-backend-x9ux.onrender.com${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(
+          isRegistering
+            ? { name: formData.name, email: formData.email, password: formData.password }
+            : { email: formData.email, password: formData.password }
+        )
       });
 
       const data = await res.json();
-      if (res.ok && typeof onLoginSuccess === 'function') {
-        onLoginSuccess(data);
+
+      if (res.ok) {
+        // Save user session and token
+        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.token) localStorage.setItem('token', data.token);
+
+        if (typeof onLoginSuccess === 'function') {
+          onLoginSuccess(data.user);
+        }
       } else {
         alert(data.message || 'Authentication failed');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      if (typeof onLoginSuccess === 'function') {
-        onLoginSuccess({
-          name: formData.name || formData.email.split('@')[0],
-          email: formData.email,
-          picture: '',
-          role: 'user'
-        });
-      }
+      console.error('Authentication error:', err);
+      alert('Network error. Please check your backend server connection.');
     }
   };
 
@@ -99,6 +101,7 @@ export default function AuthPage({ onLoginSuccess }) {
             <h2 style={styles.formTitle}>
               {isRegistering ? 'Create an account' : 'Welcome back'}
             </h2>
+
             <p style={styles.formSubtitle}>
               {isRegistering ? 'Enter your details below' : 'Please enter your credentials'}
             </p>
@@ -120,10 +123,12 @@ export default function AuthPage({ onLoginSuccess }) {
             <form onSubmit={handleSubmit} style={styles.formStack}>
               {isRegistering && (
                 <div style={styles.inputGroup}>
-                  <label style={styles.label}>Full Name</label>
+                  <label htmlFor="auth-name" style={styles.label}>Full Name</label>
                   <div style={styles.inputWrapper}>
                     <User color="#94A3B8" size={18} style={styles.inputIcon} />
                     <input
+                      id="auth-name"
+                      name="name"
                       type="text"
                       placeholder="John Doe"
                       required
@@ -136,10 +141,12 @@ export default function AuthPage({ onLoginSuccess }) {
               )}
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Email Address</label>
+                <label htmlFor="auth-email" style={styles.label}>Email Address</label>
                 <div style={styles.inputWrapper}>
                   <Mail color="#94A3B8" size={18} style={styles.inputIcon} />
                   <input
+                    id="auth-email"
+                    name="email"
                     type="email"
                     placeholder="name@company.com"
                     required
@@ -151,10 +158,12 @@ export default function AuthPage({ onLoginSuccess }) {
               </div>
 
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Password</label>
+                <label htmlFor="auth-password" style={styles.label}>Password</label>
                 <div style={styles.inputWrapper}>
                   <Lock color="#94A3B8" size={18} style={styles.inputIcon} />
                   <input
+                    id="auth-password"
+                    name="password"
                     type="password"
                     placeholder="••••••••"
                     required

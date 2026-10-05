@@ -4,13 +4,23 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 require('dotenv').config(); // Loads backend/.env variables
+const app = express();
+// Middleware
+app.use(express.json());
 
+// Import Auth Routes
+const authRoutes = require('./routes/authRoutes');
+
+// Mount Auth Routes
+app.use('/api/auth', authRoutes);
+
+// ... rest of your server setup (taskRoutes, db connection, app.listen)
 // Environment Variables (Loaded from .env locally or Render in production)
 const MONGO_URL = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/taskflow';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 
-const app = express();
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
