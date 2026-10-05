@@ -11,8 +11,8 @@ export default function AuthPage({ onLoginSuccess }) {
     try {
       if (!credentialResponse?.credential) return;
       const decoded = jwtDecode(credentialResponse.credential);
-      
-      const res = await fetch('http://localhost:5000/api/auth/google', {
+
+      const res = await fetch('https://taskflow-backend-x9ux.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -30,7 +30,6 @@ export default function AuthPage({ onLoginSuccess }) {
       }
     } catch (err) {
       console.error('Google login error:', err);
-      // Fallback if backend is not reachable
       if (typeof onLoginSuccess === 'function') {
         const decoded = jwtDecode(credentialResponse.credential);
         onLoginSuccess({
@@ -46,7 +45,7 @@ export default function AuthPage({ onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch('https://taskflow-backend-x9ux.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -74,7 +73,7 @@ export default function AuthPage({ onLoginSuccess }) {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.cardWrapper}>
-        
+
         {/* LEFT SECTION */}
         <div style={styles.leftSection}>
           <div style={styles.brandHeader}>

@@ -9,14 +9,14 @@ export default function Dashboard({ user, onLogout }) {
   const [currentSubtask, setCurrentSubtask] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
+  const API_BASE = 'https://taskflow-backend-x9ux.onrender.com/api';
   useEffect(() => {
     if (user?.id) fetchTasks();
   }, [user]);
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${user.id}`);
+      const res = await fetch(`${API_BASE}/tasks/${user.id}`);
       const data = await res.json();
       if (res.ok) setTasks(data);
     } catch (err) {
@@ -58,7 +58,7 @@ export default function Dashboard({ user, onLogout }) {
       formData.append('subtasks', JSON.stringify(subtasksInput));
       if (imageFile) formData.append('image', imageFile);
 
-      const res = await fetch('http://localhost:5000/api/tasks', {
+      const res = await fetch(`${API_BASE}/tasks`, {
         method: 'POST',
         body: formData
       });
@@ -77,7 +77,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const toggleMainTask = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${id}`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/tasks/${id}`, { method: 'PUT' });
       const updated = await res.json();
       if (res.ok) setTasks(tasks.map(t => t._id === id ? updated : t));
     } catch (err) {
@@ -87,7 +87,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const toggleSubtask = async (taskId, subtaskId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${taskId}/subtask/${subtaskId}`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/tasks/${taskId}/subtask/${subtaskId}`, { method: 'PUT' });
       const updated = await res.json();
       if (res.ok) setTasks(tasks.map(t => t._id === taskId ? updated : t));
     } catch (err) {
@@ -97,7 +97,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const deleteTask = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
       if (res.ok) setTasks(tasks.filter(t => t._id !== id));
     } catch (err) {
       console.error('Error deleting task:', err);
@@ -240,9 +240,9 @@ export default function Dashboard({ user, onLogout }) {
                   )}
 
                   {/* Attached Image */}
-                  {task.image && (
-                    <img src={`http://localhost:5000${task.image}`} alt="Task attachment" style={styles.taskImage} />
-                  )}
+{task.image && (
+  <img src={task.image.startsWith('data:') ? task.image : `https://taskflow-backend-x9ux.onrender.com${task.image}`} alt="Task attachment" style={styles.taskImage} />
+)}
                 </div>
               );
             })
